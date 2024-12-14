@@ -1,1 +1,89 @@
 
+
+# Import Libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.utils.class_weight import compute_class_weight
+
+# Load Data
+data = pd.read_csv('/content/cleaned_data.csv')
+
+# Randomly sampled 29% of the dataset to avoid crashing
+sampled_data = data.sample(frac=0.29, random_state=42)
+
+# Drop original 'Diseases' column for better ML performance
+sampled_data.drop(columns=['Diseases'], inplace=True)
+
+# Features (X) and target (y)
+X = sampled_data.drop('Diseases_encoded', axis=1)  # Drop the target column
+y = sampled_data['Diseases_encoded']
+
+# Training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Scaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Compute class weights using only the labels from the training data (y_train)
+class_weights = compute_class_weight('balanced', classes=y_train.unique(), y=y_train)
+class_weight_dict = dict(zip(y_train.unique(), class_weights))
+
+# Random Forest Classifier training
+model = RandomForestClassifier(n_estimators=100, random_state=42, class_weight=class_weight_dict)
+model.fit(X_train_scaled, y_train)
+
+# Model prediction
+y_pred = model.predict(X_test_scaled)
+
+# Evaluate model with a classification report
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Display accuracy score
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy}")
+
+# High Performance (Precision, Recall, F1-score close to 1):
+# Specify diseases_encoded values to check
+target_diseases = [654, 660, 661, 762, 763, 757]
+
+# Filter dataset to include only rows with the specified diseases_encoded values
+filtered_data = data[data['Diseases_encoded'].isin(target_diseases)]
+
+# Display 'Diseases' column for filtered rows
+print(filtered_data['Diseases'])
+
+# Moderate Performance (Precision, Recall, F1-score in the 0.50-0.75 range):
+# Specify diseases_encoded values to check
+target_diseases = [656, 669, 672, 799, 876]
+
+# Filter dataset to include only rows with the specified diseases_encoded values
+filtered_data = data[data['Diseases_encoded'].isin(target_diseases)]
+
+# Display 'Diseases' column for the filtered rows
+print(filtered_data[['Diseases_encoded', 'Diseases']])
+
+# Poor Performance (Precision, Recall, F1-score close to 0):
+# Specify diseases_encoded values to check
+target_diseases = [636, 646, 693, 689, 704]
+
+# Filter dataset to include only rows with the specified diseases_encoded values
+filtered_data = data[data['Diseases_encoded'].isin(target_diseases)]
+
+# Display 'Diseases' column for the filtered rows
+print(filtered_data[['Diseases_encoded', 'Diseases']])
+
+# Large Support (over 200 instances):
+# Specify diseases_encoded values to check
+target_diseases = [761, 757, 758, 780
+
+# Filter dataset to include only rows with the specified diseases_encoded values
+filtered_data = data[data['Diseases_encoded'].isin(target_diseases)]
+
+# Display 'Diseases' column for the filtered rows
+print(filtered_data[['Diseases_encoded', 'Diseases']])
